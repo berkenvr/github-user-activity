@@ -2,7 +2,7 @@
 
 ## Overview
 
-**GitHub User Activity CLI** is a command-line tool that fetches and displays the activity of a specified GitHub user using the GitHub API. Built with Python and relying only on the standard library.
+**GitHub User Activity CLI** is a command-line tool that fetches and displays the activity of a specified GitHub user using the GitHub API. Built with Python and relying only on the standard library. (https://roadmap.sh/projects/github-user-activity)
 
 ## Features
 
