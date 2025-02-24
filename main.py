@@ -1,81 +1,62 @@
 import urllib.request
+import urllib.error
 import json
 
-event_dict =\
-    {
-        'CommitCommentEvent': 0,
-        'CreateEvent': 0,
-        'DeleteEvent': 0,
-        'ForkEvent': 0,
-        'GollumEvent': 0,
-        'IssueCommentEvent': 0,
-        'IssuesEvent': 0,
-        'MemberEvent': 0,
-        'PublicEvent': 0,
-        'PullRequestEvent': 0,
-        'PullRequestReviewEvent': 0,
-        'PullRequestReviewCommentEvent': 0,
-        'PullRequestReviewThreadEvent': 0,
-        'PushEvent': 0,
-        'ReleaseEvent': 0,
-        'SponsorshipEvent': 0,
-        'WatchEvent': 0
-    }
-
-
-def github_activity(username):
+def fetch_github_activity(username):
     BASE_URL = f'https://api.github.com/users/{username}/events'
-    response = urllib.request.urlopen(BASE_URL)
 
-    if response.status == 200:
-        response_data = response.read().decode('utf-8')
-        event_data = json.loads(response_data)
-
-        # Overrides existing file
-        with open('data.json', 'w') as f:
-            json.dump(event_data, f, indent=4)
-
-        return count_repos(event_data)
-
-
-def count_events(event_data):
-    temp_dict = {}
-
-    for i in event_dict.keys():
-        for j in range(len(event_data)):
-            if event_data[j]['type'] == i:
-                event_dict[i] += 1
-                temp_dict.update({i: event_dict[i]})
-
-    return temp_dict
-
-
-def count_repos(event_data):
-    temp_dict = {}
-
-    for i in range(len(event_data)):
-        event_type = event_data[i]['type']
-        repo_name = event_data[i]['repo']['name']
-        event = f'{event_type} to {repo_name}'
-
-        if event not in temp_dict.keys():
-            temp_dict.update({event: 1})
+    try:
+        with urllib.request.urlopen(BASE_URL) as response:
+            if response.status != 200:
+                print(f'Error: {response.status}')
+                return None
+            response_data = response.read().decode('utf-8')
+            return json.loads(response_data)
+    except urllib.error.HTTPError as e:
+        if e.code == 404:
+            print('User not found')
         else:
-            temp_dict.update({event: temp_dict[event] + 1})
+            print(f'HTTP Error: {e.code}')
+    except urllib.error.URLError as e:
+        print(f"Failed to reach the server: {e.reason}")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+    return None
 
-    return f'{temp_dict}'
+def display_activity(event_data):
+    if not event_data:
+        print('No activity found')
+        return
 
+    for event in event_data:
+        event_type = event.get('type', 'UnknownType')
+        event_repo = event.get('repo', {}).get('name', 'UnknownRepo')
+        
+        if event_type == "PushEvent":
+            commits = event.get("payload", {}).get("commits", [])
+            count = len(commits)
+            print(f"Pushed {count} commit{'s' if count != 1 else ''} to {event_repo}")
+        elif event_type == "IssuesEvent":
+            action = event.get("payload", {}).get("action", "did something with")
+            print(f"{action.capitalize()} an issue in {event_repo}")
+        elif event_type == "WatchEvent":
+            print(f"Starred {event_repo}")
+        elif event_type == "ForkEvent":
+            print(f"Forked {event_repo}")
+        elif event_type == "PullRequestEvent":
+            action = event.get("payload", {}).get("action", "did something with")
+            print(f"{action.capitalize()} a pull request in {event_repo}")
+        else:
+            print(f"{event_type} in {event_repo}")
 
 def main():
     print("hello world")
     try:
         while True:
             username = input('github-activity ')
-            result = github_activity(username)
-            print(result)
+            display_activity(fetch_github_activity(username))
     except KeyboardInterrupt:
         print('\nUser-activity cli terminated')
-
 
 if __name__ == '__main__':
     main()
