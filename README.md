@@ -29,14 +29,13 @@
    
 ## Usage
 
-Run the CLI tool from command prompt:
+1. Run the CLI tool from command prompt:
    ```bash
    py main.py
-```
-Then write username:
+2. Then write username:
    ```bash
    github-activity-cli <username>
-```
+
 ## Project Structure
    ```bash
    github-user-activity-cli/
