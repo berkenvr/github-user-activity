@@ -50,13 +50,12 @@ def display_activity(event_data):
             print(f"{event_type} in {event_repo}")
 
 def main():
-    print("hello world")
     try:
         while True:
-            username = input('github-activity ')
+            username = input('github-activity-cli ')
             display_activity(fetch_github_activity(username))
     except KeyboardInterrupt:
-        print('\nUser-activity cli terminated')
+        print('\nCLI Terminated by keyboard interrupt')
 
 if __name__ == '__main__':
     main()
